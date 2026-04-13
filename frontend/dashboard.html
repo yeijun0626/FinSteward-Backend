@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FinSteward AI - 대시보드</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>💰 FinSteward <span id="userNameDisplay"></span>님</h1>
+            <button id="logoutBtn">로그아웃</button>
+        </header>
+
+        <section class="upload-section">
+            <h3>📸 새 영수증 분석하기</h3>
+            <input type="file" id="receiptFile">
+            <button onclick="alert('8주차에 구현할 기능입니다!')">분석 시작</button>
+        </section>
+
+        <section class="list-section">
+            <h3>📝 최근 지출 내역</h3>
+            <div id="expenseList">로그인 정보를 확인 중입니다...</div>
+        </section>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const userName = localStorage.getItem('userName');
+
+        if (!token) {
+            alert("로그인이 필요합니다!");
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('userNameDisplay').innerText = userName;
+        }
+
+        // 로그아웃 기능
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userName');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

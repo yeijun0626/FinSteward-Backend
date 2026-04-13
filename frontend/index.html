@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSteward AI - 접속</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2 id="formTitle">FinSteward AI 로그인</h2>
+        
+        <form id="authForm">
+            <div id="signUpFields" style="display: none;">
+                <input type="text" id="name" placeholder="이름">
+                <select id="accountType">
+                    <option value="personal">개인용 (Personal)</option>
+                    <option value="business">비즈니스용 (Business)</option>
+                </select>
+            </div>
+
+            <input type="email" id="email" placeholder="이메일" required>
+            
+            <div class="password-wrapper">
+                <input type="password" id="password" placeholder="비밀번호" required>
+                <span class="toggle-password" onclick="togglePasswordVisibility('password', this)">⊙</span>
+            </div>
+
+            <div id="confirmPasswordField" class="password-wrapper" style="display: none;">
+                <input type="password" id="confirmPassword" placeholder="비밀번호 확인">
+                <span class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)">⊙</span>
+            </div>
+            
+            <button type="submit" id="submitBtn">로그인</button>
+        </form>
+
+        <div id="toggleLinkArea" class="toggle-link">
+            계정이 없으신가요? <a href="#" id="switchMode">회원가입</a>
+        </div>
+
+        <p id="message"></p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
