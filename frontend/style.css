@@ -14,32 +14,39 @@ body {
 
 .login-container {
     background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    width: 350px;
+    padding: 3.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+    width: 750px; /* 가로 너비 확대 */
     text-align: center;
+}
+
+.login-container h2 {
+    font-size: 2rem;
+    margin-bottom: 2.5rem;
+    font-weight: bold;
 }
 
 input, select {
     width: 100%;
-    padding: 12px;
-    margin: 8px 0;
+    padding: 16px;
+    margin: 10px 0;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
 }
 
 button {
     width: 100%;
-    padding: 12px;
+    padding: 16px;
     background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1rem;
-    margin-top: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 15px;
 }
 
 button:hover {
@@ -52,39 +59,47 @@ button:hover {
 }
 
 .password-wrapper input {
-    padding-right: 40px;
+    padding-right: 50px;
 }
 
 .toggle-password {
     position: absolute;
-    right: 12px;
+    right: 15px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     color: #555;
-    font-weight: bold;
     user-select: none;
 }
 
-.toggle-link {
-    margin-top: 15px;
-    font-size: 0.9rem;
+.toggle-link-area {
+    margin-top: 30px;
+    font-size: 1rem;
+    color: #888;
 }
 
-.toggle-link a {
-    color: #007bff;
+.link-divider {
+    margin: 0 10px;
+    color: #ddd;
+}
+
+.toggle-link-area a {
+    color: #666;
     text-decoration: none;
-    font-weight: bold;
+}
+
+.toggle-link-area a:hover {
+    color: #007bff;
+    text-decoration: underline;
 }
 
 #message {
-    margin-top: 10px;
-    font-size: 0.9rem;
+    margin-top: 20px;
+    font-size: 1rem;
     font-weight: bold;
 }
 
-/* 브라우저 기본 눈 아이콘 강제 숨김 */
 input::-ms-reveal,
 input::-ms-clear {
     display: none;

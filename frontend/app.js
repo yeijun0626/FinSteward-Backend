@@ -2,7 +2,6 @@ let isLoginMode = true;
 
 function togglePasswordVisibility(inputId, eyeSpan) {
     const input = document.getElementById(inputId);
-    
     if (input.type === "password") {
         input.type = "text";
         eyeSpan.innerText = "⊖";
@@ -22,20 +21,15 @@ document.addEventListener('click', function(e) {
         const confirmField = document.getElementById('confirmPasswordField');
         const formTitle = document.getElementById('formTitle');
         const submitBtn = document.getElementById('submitBtn');
-        const toggleLinkArea = document.getElementById('toggleLinkArea');
         const messageText = document.getElementById('message');
+        const switchModeLink = document.getElementById('switchMode');
 
         authForm.reset();
         messageText.innerText = "";
         
-        document.querySelectorAll('.toggle-password').forEach(span => {
-            span.innerText = "⊙";
-        });
-        
+        document.querySelectorAll('.toggle-password').forEach(span => span.innerText = "⊙");
         document.querySelectorAll('input').forEach(input => {
-            if(input.id.includes('password') || input.id.includes('Password')) {
-                input.type = "password";
-            }
+            if(input.id.includes('password') || input.id.includes('Password')) input.type = "password";
         });
 
         if (isLoginMode) {
@@ -43,13 +37,13 @@ document.addEventListener('click', function(e) {
             submitBtn.innerText = "로그인";
             signUpFields.style.display = "none";
             confirmField.style.display = "none";
-            toggleLinkArea.innerHTML = '계정이 없으신가요? <a href="#" id="switchMode">회원가입</a>';
+            switchModeLink.innerText = "회원가입"; // 로그인 창일 땐 가입 링크 노출
         } else {
             formTitle.innerText = "FinSteward AI 회원가입";
             submitBtn.innerText = "가입하기";
             signUpFields.style.display = "block";
             confirmField.style.display = "block";
-            toggleLinkArea.innerHTML = '이미 계정이 있으신가요? <a href="#" id="switchMode">로그인</a>';
+            switchModeLink.innerText = "로그인"; // 가입 창일 땐 로그인 링크 노출
         }
     }
 });
@@ -63,7 +57,7 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
     if (!isLoginMode) {
         const confirmPassword = document.getElementById('confirmPassword').value;
         if (password !== confirmPassword) {
-            messageText.innerText = "비밀번호가 서로 일치하지 않습니다.";
+            messageText.innerText = "비밀번호가 일치하지 않습니다.";
             messageText.style.color = "red";
             return;
         }
@@ -82,25 +76,23 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         const data = await response.json();
-
         if (response.ok) {
             if (isLoginMode) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('userName', data.user.name);
                 window.location.href = 'dashboard.html';
             } else {
-                alert("회원가입 성공! 이제 로그인해주세요.");
-                isLoginMode = false; 
+                alert("가입 성공! 로그인해 주세요.");
+                isLoginMode = false; // 로그인 모드로 강제 설정 후 클릭 이벤트 발생
                 document.getElementById('switchMode').click();
             }
         } else {
-            messageText.innerText = data.message || "오류가 발생했습니다.";
+            messageText.innerText = data.message || "오류 발생";
             messageText.style.color = "red";
         }
     } catch (err) {
-        messageText.innerText = "서버 연결에 실패했습니다.";
+        messageText.innerText = "서버 연결 실패";
         messageText.style.color = "red";
     }
 });
