@@ -13,12 +13,10 @@ const analyzeReceipt = async (imagePath) => {
         const [result] = await visionClient.textDetection(imagePath);
         const fullText = result.textAnnotations[0]?.description;
         
-        // ⭐ [에러 핸들링 1] 글자가 너무 적은 경우
         if (!fullText || fullText.length < 10) {
             throw new Error("이미지에서 글자를 읽을 수 없습니다. 선명한 영수증 사진을 올려주세요.");
         }
 
-        // ⭐ [에러 핸들링 2] 영수증 키워드 검사
         const keywords = ["원", "합계", "금액", "주소", "번호", "부가세", "Total", "Amount", "VAT"];
         const isReceipt = keywords.some(word => fullText.includes(word));
         
@@ -58,7 +56,7 @@ const analyzeReceipt = async (imagePath) => {
 
     } catch (error) {
         console.error("OCR 서비스 에러:", error.message);
-        throw error; // 에러를 컨트롤러로 던집니다.
+        throw error;
     }
 };
 

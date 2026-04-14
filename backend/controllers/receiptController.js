@@ -10,8 +10,6 @@ const uploadReceipt = async (req, res) => {
 
     try {
         const absolutePath = path.join(process.cwd(), req.file.path);
-
-        // 1. AI 분석 호출 (이제 카테고리 ID까지 받아옵니다)
         const ocrResult = await analyzeReceipt(absolutePath);
         
         if (!ocrResult) {
@@ -19,9 +17,8 @@ const uploadReceipt = async (req, res) => {
         }
 
         const storeName = ocrResult.storeName || "알 수 없는 상점";
-        const categoryId = ocrResult.categoryId || 5; // AI가 판단한 카테고리 (없으면 기타)
+        const categoryId = ocrResult.categoryId || 5; 
         
-        // 2. 금액 데이터 정제 (콤마 제거 및 숫자 변환)
         let rawAmount = ocrResult.totalAmount || 0;
         let totalAmount = 0;
         if (typeof rawAmount === 'string') {
@@ -30,9 +27,8 @@ const uploadReceipt = async (req, res) => {
             totalAmount = parseInt(rawAmount) || 0;
         }
 
-        // 3. [지출 테이블] 자동 등록 (categoryId 적용)
         const autoExpenseData = {
-            user_id: 3, // 테스트용 계정
+            user_id: 3, 
             category_id: categoryId, 
             amount: totalAmount,
             description: `[영수증 자동등록] ${storeName}`,
@@ -44,7 +40,6 @@ const uploadReceipt = async (req, res) => {
 
             const newExpenseId = expenseResult.insertId;
 
-            // 4. [영수증 테이블] 이미지 연결 저장
             const receiptData = {
                 expense_id: newExpenseId,
                 image_url: `/uploads/${req.file.filename}`,
