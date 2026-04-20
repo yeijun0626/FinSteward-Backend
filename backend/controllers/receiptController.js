@@ -28,7 +28,7 @@ const uploadReceipt = async (req, res) => {
         }
 
         const autoExpenseData = {
-            user_id: 3, 
+            user_id: req.user.userId,
             category_id: categoryId, 
             amount: totalAmount,
             description: `[영수증 자동등록] ${storeName}`,
@@ -51,18 +51,16 @@ const uploadReceipt = async (req, res) => {
                 if (err) return res.status(500).json({ message: "영수증 저장 실패", error: err });
                 
                 res.status(201).json({ 
-                    message: "AI 영수증 분석 및 지출 내역 자동 등록 완료!", 
+                    message: "분석 및 등록 완료!", 
                     expense_id: newExpenseId,
                     storeName: storeName,
-                    amount: totalAmount,
-                    category_id: categoryId
+                    amount: totalAmount
                 });
             });
         });
 
     } catch (error) {
-        console.error("컨트롤러 에러:", error);
-        res.status(500).json({ message: "서버 처리 중 오류 발생", error: error.message });
+        res.status(500).json({ message: "서버 오류", error: error.message });
     }
 };
 

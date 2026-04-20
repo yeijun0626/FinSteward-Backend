@@ -1,20 +1,14 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "finsteward_secret_key_1234";
 
-const authMiddleware = (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+module.exports = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) {
-        return res.status(401).json({ message: "인증 토큰이 없습니다. 로그인이 필요합니다." });
-    }
+    if (!token) return res.status(401).json({ message: "인증 토큰이 없습니다." });
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
+    jwt.verify(token, "finsteward_secret_key_1234", (err, user) => {
+        if (err) return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+        req.user = user;
         next();
-    } catch (error) {
-        res.status(401).json({ message: "유효하지 않은 토큰입니다." });
-    }
+    });
 };
-
-module.exports = authMiddleware;

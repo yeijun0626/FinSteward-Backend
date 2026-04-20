@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/upload");
 const receiptController = require("../controllers/receiptController");
+const auth = require("../middlewares/auth.js");
+const upload = require("../middlewares/upload.js");
 
-router.post("/upload", upload.single("image"), receiptController.uploadReceipt);
+router.post("/upload", auth, upload.single("image"), receiptController.uploadReceipt);
 
 module.exports = router;

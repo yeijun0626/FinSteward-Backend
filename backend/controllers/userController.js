@@ -15,14 +15,24 @@ const registerUser = async (req, res) => {
     const { email, password, name, account_type } = req.body;
 
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        
+        userModel.getUserByEmail(email, async (err, existingUser) => {
+            if (err) return res.status(500).json({ message: "서버 오류", error: err });
+            
+            
+            if (existingUser) {
+                return res.status(400).json({ message: "이미 가입된 이메일입니다." });
+            }
 
-        const userData = { email, password: hashedPassword, name, account_type };
+            
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            const userData = { email, password: hashedPassword, name, account_type };
 
-        userModel.createUser(userData, (err, result) => {
-            if (err) return res.status(500).json({ message: "회원가입 실패", error: err });
-            res.status(201).json({ message: "회원가입 성공!", userId: result.insertId });
+            userModel.createUser(userData, (err, result) => {
+                if (err) return res.status(500).json({ message: "회원가입 실패", error: err });
+                res.status(201).json({ message: "회원가입 성공!", userId: result.insertId });
+            });
         });
     } catch (error) {
         res.status(500).json({ message: "서버 오류", error });
