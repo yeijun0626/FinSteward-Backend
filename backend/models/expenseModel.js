@@ -19,8 +19,8 @@ const getAllExpenses = (userId, callback) => {
 };
 
 const updateExpense = (id, data, callback) => {
-    const query = "UPDATE expense SET category_id = ?, amount = ?, description = ? WHERE expense_id = ?";
-    db.query(query, [data.category_id, data.amount, data.description, id], callback);
+    const query = "UPDATE expense SET category_id = ?, amount = ?, description = ?, expense_date = ? WHERE expense_id = ?";
+    db.query(query, [data.category_id, data.amount, data.description, data.expense_date, id], callback);
 };
 
 const deleteExpense = (id, callback) => {

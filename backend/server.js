@@ -35,3 +35,5 @@ app.listen(PORT, () => {
     console.log(`📂 업로드 저장소: ${path.join(__dirname, "uploads")}`);
     console.log("========================================");
 });
+
+app.use("/api", userRoutes);

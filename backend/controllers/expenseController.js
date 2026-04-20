@@ -1,27 +1,32 @@
 const expenseModel = require("../models/expenseModel");
 
 const createExpense = (req, res) => {
-    expenseModel.createExpense(req.body, (err, result) => {
+    const expenseData = {
+        ...req.body,
+        user_id: req.user.userId
+    };
+    expenseModel.createExpense(expenseData, (err, result) => {
         if (err) return res.status(500).json(err);
         res.status(201).json({ message: "지출 등록 성공", id: result.insertId });
     });
 };
 
 const getSummary = (req, res) => {
-    expenseModel.getExpenseSummary(req.query.user_id || 3, (err, results) => {
+    const userId = req.user.userId;
+    expenseModel.getExpenseSummary(userId, (err, results) => {
         if (err) return res.status(500).json(err);
-        res.status(200).json({ summary: results });
+        res.status(200).json(results);
     });
 };
 
 const getAll = (req, res) => {
-    expenseModel.getAllExpenses(req.query.user_id || 3, (err, results) => {
+    const userId = req.user.userId;
+    expenseModel.getAllExpenses(userId, (err, results) => {
         if (err) return res.status(500).json(err);
-        res.status(200).json({ expenses: results });
+        res.status(200).json(results);
     });
 };
 
-// ⭐ 수정 컨트롤러 추가
 const update = (req, res) => {
     expenseModel.updateExpense(req.params.id, req.body, (err) => {
         if (err) return res.status(500).json(err);
@@ -29,7 +34,6 @@ const update = (req, res) => {
     });
 };
 
-// ⭐ 삭제 컨트롤러 추가
 const remove = (req, res) => {
     expenseModel.deleteExpense(req.params.id, (err) => {
         if (err) return res.status(500).json(err);

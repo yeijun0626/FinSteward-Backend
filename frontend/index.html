@@ -3,48 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinSteward AI - 접속</title>
-    <link rel="stylesheet" href="style.css">
+    <title>FinSteward AI | Authentication</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { margin:0; font-family:'Pretendard', sans-serif; background: var(--bg); color: var(--text); display:flex; height:100vh; overflow:hidden; }
+        .left { flex:1.2; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display:flex; flex-direction:column; justify-content:center; padding:0 80px; position:relative; }
+        .left::after { content:''; position:absolute; width:300px; height:300px; background: var(--primary); filter:blur(150px); opacity:0.2; top:10%; left:10%; }
+        .right { flex:1; background: #fff; color: #333; display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius: 40px 0 0 40px; box-shadow: -10px 0 30px rgba(0,0,0,0.3); }
+        .auth-box { width:350px; display: none; }
+        .active { display: block; }
+        h1 { font-size:56px; margin-bottom:20px; line-height:1.1; color: var(--text); }
+        h2 { font-size:28px; margin-bottom:10px; color: #1e293b; }
+        input, select { width:100%; padding:16px; margin-bottom:15px; border:1px solid #e2e8f0; border-radius:12px; box-sizing:border-box; font-size:15px; background: #f8fafc; color: #333; }
+        button { width:100%; padding:16px; background: var(--primary); color:#fff; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px; margin-top: 10px; }
+        .link-group { text-align:center; font-size:14px; color:#94a3b8; margin-top:20px; }
+        .link-group span { color:var(--primary); cursor:pointer; font-weight:bold; margin: 0 5px; }
+    </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2 id="formTitle">FinSteward AI 로그인</h2>
-        
-        <form id="authForm">
-            <div id="signUpFields" style="display: none;">
-                <input type="text" id="name" placeholder="이름">
-                <select id="accountType">
-                    <option value="personal">개인용 (Personal)</option>
-                    <option value="business">비즈니스용 (Business)</option>
-                </select>
-            </div>
-
-            <input type="email" id="email" placeholder="이메일" required>
-            
-            <div class="password-wrapper">
-                <input type="password" id="password" placeholder="비밀번호" required>
-                <span class="toggle-password" onclick="togglePasswordVisibility('password', this)">⊙</span>
-            </div>
-
-            <div id="confirmPasswordField" class="password-wrapper" style="display: none;">
-                <input type="password" id="confirmPassword" placeholder="비밀번호 확인">
-                <span class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)">⊙</span>
-            </div>
-            
-            <button type="submit" id="submitBtn">로그인</button>
-        </form>
-
-        <div class="toggle-link-area">
-            <a href="#" onclick="alert('준비 중입니다!')">아이디 찾기</a>
-            <span class="link-divider">|</span>
-            <a href="#" onclick="alert('준비 중입니다!')">비밀번호 찾기</a>
-            <span class="link-divider">|</span>
-            <a href="#" id="switchMode">회원가입</a>
-        </div>
-
-        <p id="message"></p>
+    <div class="left">
+        <p style="color: var(--primary); font-weight:bold; margin-bottom:10px;">FinSteward AI v2.0</p>
+        <h1>Beyond<br>Finance Control.</h1>
+        <p style="color: #94a3b8; font-size:18px; line-height:1.6;">지능적인 자산 관리의 시작.</p>
     </div>
 
+    <div class="right">
+        <div id="loginSection" class="auth-box active">
+            <h2>로그인</h2>
+            <input type="email" id="loginId" placeholder="이메일">
+            <input type="password" id="loginPw" placeholder="비밀번호">
+            <button id="loginBtn">로그인</button>
+            <div class="link-group">
+                <span onclick="showSection('signupSection')">회원가입</span> | 
+                <span onclick="showSection('findIdSection')">아이디 찾기</span> | 
+                <span onclick="showSection('findPwSection')">비번 찾기</span>
+            </div>
+        </div>
+
+        <div id="signupSection" class="auth-box">
+            <h2>회원가입</h2>
+            <select id="sigAccountType">
+                <option value="personal">👤 개인용 계정</option>
+                <option value="group">🏢 단체 / 기업용 계정</option>
+            </select>
+            <input type="email" id="sigEmail" placeholder="이메일 (로그인용)">
+            <input type="text" id="sigId" placeholder="닉네임 (화면 표시용)">
+            <input type="password" id="sigPw" placeholder="비밀번호">
+            <input type="password" id="sigPwConfirm" placeholder="비밀번호 확인">
+            <button id="signupBtn">가입하기</button>
+            <div class="link-group"><span onclick="showSection('loginSection')">로그인으로 돌아가기</span></div>
+        </div>
+
+        <div id="findIdSection" class="auth-box">
+            <h2>아이디 찾기</h2>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">가입 시 입력한 이메일을 입력하세요.</p>
+            <input type="email" id="findIdEmail" placeholder="이메일">
+            <button id="findIdBtn">아이디 찾기</button>
+            <div class="link-group"><span onclick="showSection('loginSection')">취소</span></div>
+        </div>
+
+        <div id="findPwSection" class="auth-box">
+            <h2>비밀번호 찾기</h2>
+            <input type="text" id="findPwId" placeholder="아이디">
+            <input type="email" id="findPwEmail" placeholder="이메일">
+            <button id="findPwBtn">비밀번호 재설정 메일 발송</button>
+            <div class="link-group"><span onclick="showSection('loginSection')">취소</span></div>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

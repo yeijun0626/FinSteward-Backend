@@ -27,12 +27,17 @@ const uploadReceipt = async (req, res) => {
             totalAmount = parseInt(rawAmount) || 0;
         }
 
+        const isIncome = ocrResult.isIncome || ocrResult.type === 'income' || ocrResult.type === 'deposit';
+        totalAmount = isIncome ? Math.abs(totalAmount) : -Math.abs(totalAmount);
+
+        const safeDateStr = new Date().toISOString().split('T')[0];
+
         const autoExpenseData = {
             user_id: req.user.userId,
             category_id: categoryId, 
             amount: totalAmount,
-            description: `[영수증 자동등록] ${storeName}`,
-            expense_date: new Date()
+            description: `[AI 자동등록] ${storeName}`,
+            expense_date: safeDateStr
         };
 
         expenseModel.createExpense(autoExpenseData, (err, expenseResult) => {
@@ -44,7 +49,7 @@ const uploadReceipt = async (req, res) => {
                 expense_id: newExpenseId,
                 image_url: `/uploads/${req.file.filename}`,
                 store_name: storeName,
-                purchase_date: new Date()
+                purchase_date: safeDateStr
             };
 
             receiptModel.createReceipt(receiptData, (err, result) => {

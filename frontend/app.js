@@ -1,102 +1,88 @@
-let isLoginMode = true;
+const showSection = (sectionId) => {
+    document.querySelectorAll('.auth-box').forEach(el => el.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+};
 
-function togglePasswordVisibility(inputId, eyeSpan) {
-    const input = document.getElementById(inputId);
-    if (input.type === "password") {
-        input.type = "text";
-        eyeSpan.innerText = "⊖";
-    } else {
-        input.type = "password";
-        eyeSpan.innerText = "⊙";
-    }
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'switchMode') {
-        e.preventDefault();
-        isLoginMode = !isLoginMode;
-        
-        const authForm = document.getElementById('authForm');
-        const signUpFields = document.getElementById('signUpFields');
-        const confirmField = document.getElementById('confirmPasswordField');
-        const formTitle = document.getElementById('formTitle');
-        const submitBtn = document.getElementById('submitBtn');
-        const messageText = document.getElementById('message');
-        const switchModeLink = document.getElementById('switchMode');
-
-        authForm.reset();
-        messageText.innerText = "";
-        
-        document.querySelectorAll('.toggle-password').forEach(span => span.innerText = "⊙");
-        document.querySelectorAll('input').forEach(input => {
-            if(input.id.includes('password') || input.id.includes('Password')) input.type = "password";
-        });
-
-        if (isLoginMode) {
-            formTitle.innerText = "FinSteward AI 로그인";
-            submitBtn.innerText = "로그인";
-            signUpFields.style.display = "none";
-            confirmField.style.display = "none";
-            switchModeLink.innerText = "회원가입"; 
-        } else {
-            formTitle.innerText = "FinSteward AI 회원가입";
-            submitBtn.innerText = "가입하기";
-            signUpFields.style.display = "block";
-            confirmField.style.display = "block";
-            switchModeLink.innerText = "로그인"; 
-        }
-    }
-});
-
-document.getElementById('authForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const messageText = document.getElementById('message');
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!isLoginMode) {
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        if (password !== confirmPassword) {
-            messageText.innerText = "비밀번호가 일치하지 않습니다.";
-            messageText.style.color = "red";
-            return;
-        }
-    }
-
-    const endpoint = isLoginMode ? '/api/login' : '/api/users';
-    const payload = { email, password };
-    if (!isLoginMode) {
-        payload.name = document.getElementById('name').value;
-        payload.account_type = document.getElementById('accountType').value;
-    }
-
+const requestAction = async (url, payload, successMsg, callback) => {
     try {
-        const response = await fetch(`http://localhost:3000${endpoint}`, {
+        const res = await fetch(`http://localhost:3000${url}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
-        const data = await response.json();
-
-        if (response.ok) {
-            if (isLoginMode) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userName', data.user.name);
-                window.location.href = 'dashboard.html';
-            } else {
-                alert("가입 성공! 로그인해 주세요.");
-                isLoginMode = false;
-                document.getElementById('switchMode').click();
-            }
+        const data = await res.json();
+        if (res.ok) {
+            if (successMsg) alert(successMsg);
+            if (callback) callback(data);
         } else {
-            
-            messageText.innerText = data.message || "회원가입에 실패했습니다.";
-            messageText.style.color = "red";
+            alert(`요청 실패: ${data.message}`);
         }
-    } catch (err) {
-        messageText.innerText = "서버와 통신할 수 없습니다.";
-        messageText.style.color = "red";
+    } catch (e) {
+        alert("서버 연결 실패. 서버가 켜져 있는지 확인하세요.");
     }
-    
+};
+
+document.getElementById('loginBtn').onclick = () => {
+    const email = document.getElementById('loginId').value;
+    const password = document.getElementById('loginPw').value;
+
+    if (!email || !password) {
+        alert("이메일과 비밀번호를 입력해주세요.");
+        return;
+    }
+
+    requestAction('/api/login', { email, password }, null, (data) => {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userName', data.user ? data.user.name : 'User');
+        window.location.href = 'dashboard.html';
+    });
+};
+
+document.getElementById('signupBtn').onclick = () => {
+    const account_type = document.getElementById('sigAccountType').value;
+    const email = document.getElementById('sigEmail').value;
+    const name = document.getElementById('sigId').value;
+    const password = document.getElementById('sigPw').value;
+    const passwordConfirm = document.getElementById('sigPwConfirm').value;
+
+    if (!email || !name || !password || !passwordConfirm) {
+        alert("모든 정보를 입력해주세요.");
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        alert("비밀번호가 일치하지 않습니다.");
+        return;
+    }
+
+    requestAction('/api/users', { email, password, name, account_type }, "가입 성공! 로그인해주세요.", () => showSection('loginSection'));
+};
+
+document.getElementById('findIdBtn').onclick = () => {
+    const email = document.getElementById('findIdEmail').value;
+    if (!email) {
+        alert("이메일을 입력해주세요.");
+        return;
+    }
+    alert("아이디 찾기 요청: " + email);
+};
+
+document.getElementById('findPwBtn').onclick = () => {
+    const username = document.getElementById('findPwId').value;
+    const email = document.getElementById('findPwEmail').value;
+    if (!username || !email) {
+        alert("아이디와 이메일을 입력해주세요.");
+        return;
+    }
+    alert("비밀번호 찾기 요청: " + username + " / " + email);
+};
+
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const activeSection = document.querySelector('.auth-box.active');
+        if (activeSection) {
+            const btn = activeSection.querySelector('button');
+            if (btn) btn.click();
+        }
+    }
 });
