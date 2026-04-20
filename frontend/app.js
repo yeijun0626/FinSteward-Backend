@@ -37,13 +37,13 @@ document.addEventListener('click', function(e) {
             submitBtn.innerText = "로그인";
             signUpFields.style.display = "none";
             confirmField.style.display = "none";
-            switchModeLink.innerText = "회원가입"; // 로그인 창일 땐 가입 링크 노출
+            switchModeLink.innerText = "회원가입"; 
         } else {
             formTitle.innerText = "FinSteward AI 회원가입";
             submitBtn.innerText = "가입하기";
             signUpFields.style.display = "block";
             confirmField.style.display = "block";
-            switchModeLink.innerText = "로그인"; // 가입 창일 땐 로그인 링크 노출
+            switchModeLink.innerText = "로그인"; 
         }
     }
 });
@@ -76,7 +76,9 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+        
         const data = await response.json();
+
         if (response.ok) {
             if (isLoginMode) {
                 localStorage.setItem('token', data.token);
@@ -84,15 +86,17 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
                 window.location.href = 'dashboard.html';
             } else {
                 alert("가입 성공! 로그인해 주세요.");
-                isLoginMode = false; // 로그인 모드로 강제 설정 후 클릭 이벤트 발생
+                isLoginMode = false;
                 document.getElementById('switchMode').click();
             }
         } else {
-            messageText.innerText = data.message || "오류 발생";
+            
+            messageText.innerText = data.message || "회원가입에 실패했습니다.";
             messageText.style.color = "red";
         }
     } catch (err) {
-        messageText.innerText = "서버 연결 실패";
+        messageText.innerText = "서버와 통신할 수 없습니다.";
         messageText.style.color = "red";
     }
+    
 });

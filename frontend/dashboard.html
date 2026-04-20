@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinSteward AI - 대시보드</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,10 +13,20 @@
             <button id="logoutBtn">로그아웃</button>
         </header>
 
-        <section class="upload-section">
-            <h3>📸 새 영수증 분석하기</h3>
-            <input type="file" id="receiptFile">
-            <button onclick="alert('8주차에 구현할 기능입니다!')">분석 시작</button>
+        <section class="upload-container">
+            <h2>📸 AI 영수증 분석</h2>
+            <p>영수증 사진을 올리면 자동으로 지출 내역을 등록합니다.</p>
+            
+            <div class="upload-box">
+                <input type="file" id="receiptFile" accept="image/*">
+                <button id="uploadBtn">분석 및 등록하기</button>
+            </div>
+
+            <div id="analysisResult" style="display: none; margin-top: 20px; padding: 15px; border-radius: 8px; background: #eef6ff;">
+                <h4>분석 결과</h4>
+                <p id="resultText"></p>
+            </div>
+            <div id="resultArea" style="margin-top: 20px; font-weight: bold;"></div>
         </section>
 
         <section class="list-section">
@@ -28,6 +39,7 @@
         const token = localStorage.getItem('token');
         const userName = localStorage.getItem('userName');
 
+        // 로그인 체크
         if (!token) {
             alert("로그인이 필요합니다!");
             window.location.href = 'index.html';
@@ -35,12 +47,14 @@
             document.getElementById('userNameDisplay').innerText = userName;
         }
 
-        // 로그아웃 기능
+        // 로그아웃
         document.getElementById('logoutBtn').addEventListener('click', () => {
             localStorage.removeItem('token');
             localStorage.removeItem('userName');
             window.location.href = 'index.html';
         });
     </script>
+
+    <script src="dashboard.js"></script>
 </body>
 </html>
