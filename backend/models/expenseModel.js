@@ -14,7 +14,13 @@ const getExpenseSummary = (userId, callback) => {
 };
 
 const getAllExpenses = (userId, callback) => {
-    const query = "SELECT * FROM expense WHERE user_id = ? ORDER BY expense_date DESC";
+    const query = `
+        SELECT e.*, u.name as spender_name 
+        FROM expense e 
+        LEFT JOIN user u ON e.user_id = u.user_id 
+        WHERE e.user_id = ? 
+        ORDER BY e.expense_date DESC
+    `;
     db.query(query, [userId], callback);
 };
 
