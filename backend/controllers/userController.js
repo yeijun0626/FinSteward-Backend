@@ -2,7 +2,7 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "finsteward_secret_key_1234";
+const JWT_SECRET = process.env.JWT_SECRET || "finsteward_secret_key_1234";
 
 const getUsers = (req, res) => {
     userModel.getAllUsers((err, users) => {
@@ -15,16 +15,13 @@ const registerUser = async (req, res) => {
     const { email, password, name, account_type } = req.body;
 
     try {
-        
         userModel.getUserByEmail(email, async (err, existingUser) => {
             if (err) return res.status(500).json({ message: "서버 오류", error: err });
-            
             
             if (existingUser) {
                 return res.status(400).json({ message: "이미 가입된 이메일입니다." });
             }
 
-            
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
             const userData = { email, password: hashedPassword, name, account_type };

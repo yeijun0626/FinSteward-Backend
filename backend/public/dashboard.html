@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSteward AI | Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        body { margin:0; font-family:'Pretendard', sans-serif; background: var(--bg); color: var(--text); }
+        .nav { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top:0; z-index:100; }
+        .main-container { max-width: 1100px; margin: 40px auto; display: grid; grid-template-columns: 1fr 350px; gap: 30px; padding: 0 20px; }
+        .card { background: #fff; border-radius: 24px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+        .summary-card { background: var(--primary); color: #fff; display: flex; flex-direction: column; gap: 20px; min-height: 220px; justify-content: space-between; }
+        .summary-header { display: flex; justify-content: space-between; align-items: center; }
+        .summary-tabs { display: flex; gap: 15px; font-size: 15px; }
+        .summary-tabs span { cursor: pointer; opacity: 0.7; padding-bottom: 3px; border-bottom: 2px solid transparent; }
+        .summary-tabs span.active { opacity: 1; font-weight: bold; border-color: #fff; }
+        .month-nav { display: flex; align-items: center; gap: 10px; }
+        .month-nav button { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 6px; cursor: pointer; padding: 4px 10px; font-size: 14px; }
+        .total-amount { font-size: 42px; font-weight: bold; margin: 10px 0; }
+        .budget-status-box { background: rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .btn { flex:1; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; transition:0.2s; border:none; }
+        .btn-ai { background: var(--primary); color:#fff; }
+        .btn-manual { background: #fff; color: var(--text); border: 1px solid #e2e8f0; }
+        .expense-item { display: flex; justify-content: space-between; padding: 18px; background: #fff; border-radius: 16px; margin-bottom: 12px; transition: 0.2s; border: 1px solid transparent; }
+        .expense-item:hover { border-color: var(--primary); transform: translateX(5px); }
+        .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 220px; overflow-y: auto; padding-right: 5px; }
+        .cat-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 5px; border-radius: 12px; cursor: pointer; border: 2px solid #f1f5f9; background: #fff; transition: 0.2s; }
+        .cat-item:hover { background: #f8fafc; }
+        .cat-icon { font-size: 24px; margin-bottom: 5px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; object-fit: cover; }
+        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } .nav { padding: 15px 20px; } }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <h2 style="margin:0; color:var(--primary);">FinSteward.</h2>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <span id="userNameDisplay" style="font-weight:bold;"></span>
+            <button id="logoutBtn" style="background:none; border:1px solid #ddd; padding:8px 15px; border-radius:10px; cursor:pointer;">로그아웃</button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="left-content">
+            <div class="card summary-card">
+                <div class="summary-header">
+                    <div class="summary-tabs">
+                        <span id="tabNet" class="active">순수익</span>
+                        <span id="tabInc">수입</span>
+                        <span id="tabExp">지출</span>
+                    </div>
+                    <div class="month-nav">
+                        <button id="prevMonth">◀</button>
+                        <span id="currentMonthDisplay">2026.04</span>
+                        <button id="nextMonth">▶</button>
+                    </div>
+                </div>
+                
+                <h1 id="totalDisplay" class="total-amount">0원</h1>
+
+                <div class="budget-status-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:14px; opacity:0.8;">남은 예산</span>
+                            <button id="setBudgetBtn" style="background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:6px; padding:3px 8px; cursor:pointer; font-size:11px;">💰 예산 설정</button>
+                        </div>
+                        <span id="remainingBudgetText" style="font-weight:bold;">0원</span>
+                    </div>
+                    <div id="budgetAnalysisText" style="font-size:13px; opacity:0.9;">데이터 분석 중...</div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <div style="display:flex; gap:10px;">
+                    <button onclick="document.getElementById('receiptFile').click()" class="btn btn-ai">📸 영수증/계좌 자동 입력</button>
+                    <button id="openModalBtn" class="btn btn-manual">✍️ 내역 직접 입력</button>
+                </div>
+                <div id="aiStatusMsg" style="text-align:center; font-size:14px; color:#2563eb; font-weight:bold; height:20px;"></div>
+                <input type="file" id="receiptFile" style="display:none;" accept="image/*">
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 style="margin:0;">최근 거래 내역</h3>
+                    <input type="text" id="searchInput" placeholder="상호명 검색..." style="padding:8px; border-radius:8px; border:1px solid #ddd;">
+                </div>
+                <div id="expenseList"></div>
+            </div>
+        </div>
+
+        <div class="right-content">
+            <div class="card" style="margin-bottom:30px;">
+                <h3 style="margin-top:0;">카테고리별 통계</h3>
+                <canvas id="expenseChart"></canvas>
+            </div>
+            <div class="card" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+                <h3 style="margin-top:0; color:var(--primary);">🤖 AI 분석 리포트</h3>
+                <p id="aiReport" style="font-size:14px; line-height:1.6; color:#1e40af;">데이터 분석 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="manualModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 420px; max-width: 95%; padding: 30px; border-radius: 24px;">
+            <h3 id="modalTitle" style="margin:0 0 20px 0;">내역 입력</h3>
+            <form id="manualForm">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" id="typeExp" style="flex:1; padding:12px; border-radius:12px; border:none; cursor:pointer;">지출</button>
+                    <button type="button" id="typeInc" style="flex:1; padding:12px; border-radius:12px; border:none; cursor:pointer;">수입</button>
+                </div>
+                <input type="hidden" id="editId">
+                <input type="text" id="manualMerchant" placeholder="상호명" style="width:100%; padding:15px; margin-bottom:10px; border:1px solid #e2e8f0; border-radius:12px; box-sizing:border-box;">
+                <input type="text" id="manualDesc" placeholder="내용" style="width:100%; padding:15px; margin-bottom:10px; border:1px solid #e2e8f0; border-radius:12px; box-sizing:border-box;">
+                <input type="number" id="manualAmount" placeholder="금액" style="width:100%; padding:15px; margin-bottom:15px; border:1px solid #e2e8f0; border-radius:12px; box-sizing:border-box;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-size:14px; color:#64748b;">카테고리</label>
+                    <button type="button" id="manageCatBtn" style="background:none; border:none; color:#2563eb; cursor:pointer; font-size:13px; font-weight:bold;">⚙️ 카테고리 수정</button>
+                </div>
+                <div id="categoryGrid" class="cat-grid" style="margin-bottom:20px;"></div>
+                <input type="hidden" id="manualCategory">
+                
+                <input type="date" id="manualDate" style="width:100%; padding:15px; margin-bottom:25px; border:1px solid #e2e8f0; border-radius:12px; box-sizing:border-box;">
+                <div style="display:flex; gap:10px;">
+                    <button type="button" id="closeModalBtn" style="flex:1; padding:15px; border-radius:12px; border:none; background:#f1f5f9; cursor:pointer;">취소</button>
+                    <button type="button" id="saveManualBtn" style="flex:1; padding:15px; border-radius:12px; border:none; background:#2563eb; color:#fff; cursor:pointer;">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="budgetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 2020; justify-content: center; align-items: center; overflow-y: auto;">
+        <div style="background: #fff; width: 400px; padding: 30px; border-radius: 24px; box-sizing: border-box;">
+            <h3 style="margin-top:0; color:#1e293b; text-align:center;">예산설정</h3>
+            
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <label style="flex:1; text-align:center; padding:10px; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+                    <input type="radio" name="pType" value="month" checked onclick="togglePeriodUI('month')"> 월간
+                </label>
+                <label style="flex:1; text-align:center; padding:10px; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+                    <input type="radio" name="pType" value="year" onclick="togglePeriodUI('year')"> 연간
+                </label>
+                <label style="flex:1; text-align:center; padding:10px; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+                    <input type="radio" name="pType" value="custom" onclick="togglePeriodUI('custom')"> 직접
+                </label>
+            </div>
+
+            <div id="ui-month" style="margin-bottom:20px;">
+                <input type="month" id="budgetMonthInp" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; outline:none;">
+            </div>
+
+            <div id="ui-year" style="margin-bottom:20px; display:none;">
+                <input type="number" id="budgetYearInp" placeholder="예: 2026" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; outline:none;">
+            </div>
+
+            <div id="ui-custom" style="margin-bottom:20px; display:none;">
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input type="text" id="customStart" placeholder="시작(YYYY-MM-DD)" style="flex:1; padding:10px; font-size:12px; border:1px solid #ddd; border-radius:8px;">
+                    <input type="text" id="customEnd" placeholder="종료(YYYY-MM-DD)" style="flex:1; padding:10px; font-size:12px; border:1px solid #ddd; border-radius:8px;">
+                </div>
+                <div id="customCalendarArea" style="background:#f8fafc; border-radius:12px; padding:15px; border:1px solid #e2e8f0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <button type="button" onclick="changeCalMonth(-1)" style="border:none; background:none; cursor:pointer;">◀</button>
+                        <span id="calHeader" style="font-weight:bold; font-size:14px;"></span>
+                        <button type="button" onclick="changeCalMonth(1)" style="border:none; background:none; cursor:pointer;">▶</button>
+                    </div>
+                    <div id="calGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:5px; text-align:center; font-size:12px;"></div>
+                </div>
+            </div>
+
+            <input type="text" id="budgetInput" placeholder="예산 금액 입력" style="width:100%; padding:15px; margin-bottom:25px; border-radius:12px; border:1px solid #e2e8f0; box-sizing:border-box; outline:none; font-size:18px; font-weight:bold;">
+            
+            <div style="display:flex; gap:10px;">
+                <button type="button" onclick="document.getElementById('budgetModal').style.display='none'" style="flex:1; padding:15px; border-radius:12px; border:none; background:#f1f5f9; cursor:pointer; font-weight:bold;">취소</button>
+                <button type="button" id="confirmBudgetBtn" style="flex:1; padding:15px; border-radius:12px; border:none; background:#2563eb; color:#fff; font-weight:bold; cursor:pointer;">저장</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="categoryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 2010; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 350px; padding: 25px; border-radius: 20px;">
+            <h3 style="margin-top:0; margin-bottom:15px; color:#1e293b;">새 카테고리 만들기</h3>
+            <div id="iconPreview" style="font-size:40px; text-align:center; margin-bottom:15px; height:45px; display:flex; justify-content:center; align-items:center;">✨</div>
+            <div id="presetIcons" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin-bottom:15px;"></div>
+            <label style="font-size:12px; color:#64748b; display:block; margin-bottom:5px;">또는 이미지 업로드</label>
+            <input type="file" id="customCatIcon" accept="image/*" style="margin-bottom:15px; width:100%; font-size:12px;">
+            <input type="hidden" id="selectedIconVal" value="✨">
+            <input type="text" id="newCatName" placeholder="카테고리명" style="width:100%; padding:12px; margin-bottom:20px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <div style="display:flex; gap:10px;">
+                <button type="button" onclick="document.getElementById('categoryModal').style.display='none'" style="flex:1; padding:12px; border-radius:8px; border:none; background:#f1f5f9; cursor:pointer;">취소</button>
+                <button type="button" id="saveCatBtn" style="flex:1; padding:12px; border-radius:8px; border:none; background:#2563eb; color:#fff; font-weight:bold; cursor:pointer;">추가하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="manageCatModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 350px; padding: 25px; border-radius: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:#1e293b;">카테고리 수정</h3>
+                <button type="button" onclick="openCategoryModal()" style="background:#eff6ff; color:#2563eb; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">+ 새 카테고리</button>
+            </div>
+            <div id="manageCatList" style="max-height:300px; overflow-y:auto; margin-bottom:20px;"></div>
+            <button type="button" onclick="document.getElementById('manageCatModal').style.display='none'; loadCategories();" style="width:100%; padding:12px; border-radius:8px; border:none; background:#2563eb; color:#fff; font-weight:bold; cursor:pointer;">완료</button>
+        </div>
+    </div>
+
+    <div id="alertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 3000; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 320px; padding: 25px; border-radius: 20px; text-align: center;">
+            <div id="alertIcon" style="font-size: 40px; margin-bottom: 15px;">⚠️</div>
+            <h3 id="alertTitle" style="margin:0 0 10px 0;">알림</h3>
+            <p id="alertMsg" style="color:#64748b; margin-bottom:25px;"></p>
+            <div style="display:flex; gap:10px;">
+                <button type="button" id="alertCancelBtn" style="flex:1; padding:12px; border:none; border-radius:10px; background:#f1f5f9; cursor:pointer;">취소</button>
+                <button type="button" id="alertConfirmBtn" style="flex:1; padding:12px; border:none; border-radius:10px; background:#2563eb; color:#fff; cursor:pointer;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

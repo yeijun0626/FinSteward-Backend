@@ -5,7 +5,7 @@ const showSection = (sectionId) => {
 
 const requestAction = async (url, payload, successMsg, callback) => {
     try {
-        const res = await fetch(`http://localhost:3000${url}`, {
+        const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
