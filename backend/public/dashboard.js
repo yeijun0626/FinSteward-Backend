@@ -919,25 +919,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadExpenses();
 });
 
-const modal = document.getElementById("receiptModal");
-const modalImg = document.getElementById("receiptImage");
-const closeBtn = document.querySelector(".close-modal");
+window.showReceipt = (receiptUrl) => {
+    const modal = document.getElementById("receiptModal");
+    const modalImg = document.getElementById("receiptImage");
 
-const showReceipt = (receiptUrl) => {
-    if (!receiptUrl) {
+    if (!modal || !modalImg) {
+        alert("HTML에 팝업창 코드가 없습니다. dashboard.html을 확인해주세요.");
+        return;
+    }
+
+    if (!receiptUrl || receiptUrl === 'undefined' || receiptUrl === 'null' || receiptUrl.trim() === '') {
         alert("이 거래 내역에는 첨부된 영수증이 없습니다.");
         return;
     }
+
     modal.style.display = "block";
     modalImg.src = receiptUrl;
 };
 
-closeBtn.onclick = () => {
-    modal.style.display = "none";
-};
-
-window.onclick = (event) => {
-    if (event.target == modal) {
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById("receiptModal");
+    if (e.target.classList.contains('close-modal')) {
+        if(modal) modal.style.display = "none";
+    }
+    if (e.target === modal) {
         modal.style.display = "none";
     }
-};
+});
