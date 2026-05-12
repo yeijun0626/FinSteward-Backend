@@ -108,7 +108,7 @@ function renderList(data) {
                 <div style="font-weight:bold; color:${item.amount > 0 ? '#10b981' : '#ef4444'};">
                     ${item.amount.toLocaleString()}원
                 </div>
-                <button onclick="event.stopPropagation(); showReceipt('${item.receipt_url || ''}')" style="border:none; background:#e0f2fe; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px; margin-right:5px;">📷 영수증</button>
+                <button onclick="event.stopPropagation(); showReceipt(${item.expense_id || item.id}, '${item.receipt_url || ''}')" style="border:none; background:#e0f2fe; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px; margin-right:5px;">📷 영수증</button>
                 <button onclick="event.stopPropagation(); deleteEntry(${item.expense_id || item.id})" style="border:none; background:#fee2e2; color:#ef4444; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px;">삭제</button>
             </div>
         </div>
@@ -919,30 +919,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadExpenses();
 });
 
-window.showReceipt = (receiptUrl) => {
+let currentReceiptExpenseId = null;
+
+window.showReceipt = (expenseId, receiptUrl) => {
+    currentReceiptExpenseId = expenseId;
     const modal = document.getElementById("receiptModal");
-    const modalImg = document.getElementById("receiptImage");
+    const img = document.getElementById("receiptImage");
+    const text = document.getElementById("noReceiptText");
+    const fileInput = document.getElementById("receiptFileInput");
+    const saveBtn = document.getElementById("uploadReceiptBtn");
 
-    if (!modal || !modalImg) {
-        alert("HTML에 팝업창 코드가 없습니다. dashboard.html을 확인해주세요.");
-        return;
+    fileInput.value = "";
+    saveBtn.style.display = "none";
+
+    if (receiptUrl && receiptUrl !== 'undefined' && receiptUrl !== 'null' && receiptUrl.trim() !== '') {
+        img.src = receiptUrl;
+        img.style.display = "block";
+        text.style.display = "none";
+    } else {
+        img.style.display = "none";
+        text.style.display = "block";
     }
-
-    if (!receiptUrl || receiptUrl === 'undefined' || receiptUrl === 'null' || receiptUrl.trim() === '') {
-        alert("이 거래 내역에는 첨부된 영수증이 없습니다.");
-        return;
-    }
-
     modal.style.display = "block";
-    modalImg.src = receiptUrl;
+};
+
+document.getElementById('receiptFileInput').addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById("receiptImage").src = e.target.result;
+            document.getElementById("receiptImage").style.display = "block";
+            document.getElementById("noReceiptText").style.display = "none";
+            document.getElementById("uploadReceiptBtn").style.display = "block";
+        };
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
+document.getElementById('uploadReceiptBtn').onclick = async () => {
+    const file = document.getElementById('receiptFileInput').files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('receipt', file);
+
+    try {
+        const res = await fetch(`/api/expense/${currentReceiptExpenseId}/receipt`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        });
+        if (res.ok) {
+            alert('영수증이 저장되었습니다.');
+            document.getElementById("receiptModal").style.display = "none";
+            location.reload();
+        } else {
+            alert('저장 실패');
+        }
+    } catch (e) {
+        alert('서버 오류');
+    }
 };
 
 document.addEventListener('click', (e) => {
     const modal = document.getElementById("receiptModal");
-    if (e.target.classList.contains('close-modal')) {
+    if (e.target.classList.contains('close-modal') || e.target === modal) {
         if(modal) modal.style.display = "none";
-    }
-    if (e.target === modal) {
-        modal.style.display = "none";
     }
 });
