@@ -108,6 +108,7 @@ function renderList(data) {
                 <div style="font-weight:bold; color:${item.amount > 0 ? '#10b981' : '#ef4444'};">
                     ${item.amount.toLocaleString()}원
                 </div>
+                <button onclick="event.stopPropagation(); showReceipt('${item.receipt_url || ''}')" style="border:none; background:#e0f2fe; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px; margin-right:5px;">📷 영수증</button>
                 <button onclick="event.stopPropagation(); deleteEntry(${item.expense_id || item.id})" style="border:none; background:#fee2e2; color:#ef4444; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px;">삭제</button>
             </div>
         </div>
@@ -917,3 +918,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories(); 
     loadExpenses();
 });
+
+const modal = document.getElementById("receiptModal");
+const modalImg = document.getElementById("receiptImage");
+const closeBtn = document.querySelector(".close-modal");
+
+const showReceipt = (receiptUrl) => {
+    if (!receiptUrl) {
+        alert("이 거래 내역에는 첨부된 영수증이 없습니다.");
+        return;
+    }
+    modal.style.display = "block";
+    modalImg.src = receiptUrl;
+};
+
+closeBtn.onclick = () => {
+    modal.style.display = "none";
+};
+
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+};

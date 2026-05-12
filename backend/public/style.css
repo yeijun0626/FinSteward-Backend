@@ -125,3 +125,43 @@ input::-webkit-credentials-auto-fill-button {
         font-size: 1rem;
     }
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 80vh;
+    margin-top: 10vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.transaction-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.transaction-item:hover {
+    background-color: #f1f5f9;
+}
