@@ -64,6 +64,28 @@ router.post('/budget', auth, (req, res) => {
     });
 });
 
+router.post('/', auth, (req, res) => {
+    const userId = getUserId(req);
+    const teamInfo = getTeamInfo(req);
+    const { description, amount, expense_date, category_id } = req.body;
+
+    const query = 'INSERT INTO expense (user_id, team_id, description, amount, expense_date, category_id) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [userId, teamInfo.teamId, description, amount, expense_date, category_id || 8], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "성공", id: result.insertId });
+    });
+});
+
+router.post('/report', auth, async (req, res) => {
+    try {
+        const { expenses, budget, income, totalExpense } = req.body;
+        const report = await generateReport(expenses, budget, income, totalExpense);
+        res.json({ report });
+    } catch (error) {
+        res.status(500).json({ error: "리포트 생성 실패" });
+    }
+});
+
 router.post('/ocr', auth, upload.single('receipt'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "파일 없음" });

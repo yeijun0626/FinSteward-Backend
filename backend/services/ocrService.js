@@ -1,5 +1,4 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fs = require("fs");
 require("dotenv").config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -7,7 +6,16 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const analyzeReceipt = async (imagePath, categoriesText) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
-        const imageBuffer = fs.readFileSync(imagePath);
+        
+        let imageBuffer;
+        if (imagePath.startsWith('http')) {
+            const response = await fetch(imagePath);
+            const arrayBuffer = await response.arrayBuffer();
+            imageBuffer = Buffer.from(arrayBuffer);
+        } else {
+            const fs = require('fs');
+            imageBuffer = fs.readFileSync(imagePath);
+        }
         
         const imageParts = [
             {
