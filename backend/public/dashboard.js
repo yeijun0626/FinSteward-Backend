@@ -96,8 +96,11 @@ function renderSummary(data) {
 function renderList(data) {
     const listDiv = document.getElementById('expenseList');
     if (!listDiv) return;
-    listDiv.innerHTML = data.map(item => `
-        <div class="expense-item" onclick="editEntry(${item.expense_id || item.id})" style="cursor:pointer; display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f1f5f9;">
+    listDiv.innerHTML = data.map(item => {
+        const id = item.expense_id || item.id;
+        const receiptUrl = item.receipt_url || '';
+        return `
+        <div class="expense-item" onclick="editEntry(${id})" style="cursor:pointer; display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f1f5f9;">
             <div>
                 <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">
                     ${item.expense_date.slice(0, 10)}
@@ -108,11 +111,11 @@ function renderList(data) {
                 <div style="font-weight:bold; color:${item.amount > 0 ? '#10b981' : '#ef4444'};">
                     ${item.amount.toLocaleString()}원
                 </div>
-                <button onclick="event.stopPropagation(); showReceipt(${item.expense_id || item.id}, '${item.receipt_url || ''}')" style="border:none; background:#e0f2fe; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px; margin-right:5px;">📷 영수증</button>
-                <button onclick="event.stopPropagation(); deleteEntry(${item.expense_id || item.id})" style="border:none; background:#fee2e2; color:#ef4444; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px;">삭제</button>
+                <button onclick="event.stopPropagation(); showReceipt(${id}, '${receiptUrl}')" style="border:none; background:#e0f2fe; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px; margin-right:5px;">📷 영수증</button>
+                <button onclick="event.stopPropagation(); deleteEntry(${id})" style="border:none; background:#fee2e2; color:#ef4444; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; margin-top:5px;">삭제</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function updateChart(data) {
@@ -926,20 +929,22 @@ window.showReceipt = (expenseId, receiptUrl) => {
     const modal = document.getElementById("receiptModal");
     const img = document.getElementById("receiptImage");
     const text = document.getElementById("noReceiptText");
-    const fileInput = document.getElementById("receiptFileInput");
     const saveBtn = document.getElementById("uploadReceiptBtn");
+    const fileInput = document.getElementById("receiptFileInput");
 
     fileInput.value = "";
     saveBtn.style.display = "none";
 
-    if (receiptUrl && receiptUrl !== 'undefined' && receiptUrl !== 'null' && receiptUrl.trim() !== '') {
+    if (receiptUrl && receiptUrl !== 'null' && receiptUrl !== 'undefined' && receiptUrl.trim() !== '') {
         img.src = receiptUrl;
         img.style.display = "block";
         text.style.display = "none";
     } else {
+        img.src = "";
         img.style.display = "none";
         text.style.display = "block";
     }
+
     modal.style.display = "block";
 };
 
@@ -947,8 +952,9 @@ document.getElementById('receiptFileInput').addEventListener('change', function(
     if (this.files && this.files[0]) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            document.getElementById("receiptImage").src = e.target.result;
-            document.getElementById("receiptImage").style.display = "block";
+            const img = document.getElementById("receiptImage");
+            img.src = e.target.result;
+            img.style.display = "block";
             document.getElementById("noReceiptText").style.display = "none";
             document.getElementById("uploadReceiptBtn").style.display = "block";
         };
@@ -957,7 +963,8 @@ document.getElementById('receiptFileInput').addEventListener('change', function(
 });
 
 document.getElementById('uploadReceiptBtn').onclick = async () => {
-    const file = document.getElementById('receiptFileInput').files[0];
+    const fileInput = document.getElementById('receiptFileInput');
+    const file = fileInput.files[0];
     if (!file) return;
 
     const formData = new FormData();
@@ -969,6 +976,7 @@ document.getElementById('uploadReceiptBtn').onclick = async () => {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: formData
         });
+        
         if (res.ok) {
             alert('영수증이 저장되었습니다.');
             document.getElementById("receiptModal").style.display = "none";
@@ -977,7 +985,7 @@ document.getElementById('uploadReceiptBtn').onclick = async () => {
             alert('저장 실패');
         }
     } catch (e) {
-        alert('서버 오류');
+        alert('서버 오류 발생');
     }
 };
 

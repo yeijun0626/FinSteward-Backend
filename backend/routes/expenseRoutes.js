@@ -2,16 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middlewares/auth');
-const multer = require('multer');
-const fs = require('fs');
-const upload = multer({ dest: 'uploads/' });
+const upload = require('../middlewares/upload');
 const { analyzeReceipt, generateReport } = require('../services/ocrService');
 
 const getUserId = (req) => req.user.userId || req.user.id || req.user.user_id;
 
 router.get('/list', auth, (req, res) => {
     const userId = getUserId(req);
-    const query = 'SELECT * FROM expense WHERE user_id = ? ORDER BY expense_date DESC';
+    const query = 'SELECT *, image_url AS receipt_url FROM expense WHERE user_id = ? ORDER BY expense_date DESC';
     db.query(query, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
@@ -102,6 +100,20 @@ router.post('/ocr', auth, upload.single('receipt'), async (req, res) => {
     }
 });
 
+router.post('/:id/receipt', auth, upload.single('receipt'), (req, res) => {
+    const userId = getUserId(req);
+    if (!req.file) return res.status(400).json({ message: "업로드된 파일이 없습니다." });
+
+    const imageUrl = req.file.path;
+
+    const query = 'UPDATE expense SET image_url = ? WHERE expense_id = ? AND user_id = ?';
+    db.query(query, [imageUrl, req.params.id, userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ message: "내역 없음" });
+        res.json({ message: "성공", receipt_url: imageUrl });
+    });
+});
+
 router.post('/report', auth, async (req, res) => {
     try {
         const { expenses, budget, income, totalExpense } = req.body;
@@ -114,7 +126,7 @@ router.post('/report', auth, async (req, res) => {
 
 router.get('/:id', auth, (req, res) => {
     const userId = getUserId(req);
-    const query = 'SELECT * FROM expense WHERE expense_id = ? AND user_id = ?';
+    const query = 'SELECT *, image_url AS receipt_url FROM expense WHERE expense_id = ? AND user_id = ?';
     db.query(query, [req.params.id, userId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(result[0]);
