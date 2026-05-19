@@ -47,11 +47,10 @@ router.post('/join', auth, (req, res) => {
 
 router.get('/my', auth, (req, res) => {
     const userId = getUserId(req);
-    const query = 'SELECT t.name, t.invite_code, tm.role FROM team_members tm JOIN teams t ON tm.team_id = t.team_id WHERE tm.user_id = ? LIMIT 1';
+    const query = 'SELECT t.team_id, t.name, t.invite_code, tm.role FROM team_members tm JOIN teams t ON tm.team_id = t.team_id WHERE tm.user_id = ?';
     db.query(query, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (results.length === 0) return res.json(null);
-        res.json(results[0]);
+        res.json(results);
     });
 });
 

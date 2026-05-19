@@ -180,7 +180,8 @@ async function updateAIReport(data) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'x-team-id': localStorage.getItem('currentTeamId')
             },
             body: JSON.stringify({
                 expenses: data, 
@@ -211,7 +212,7 @@ async function loadBudget() {
     
     try {
         const res = await fetch(`/api/expense/budget?date=${todayStr}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         if (res.ok) {
             const data = await res.json();
@@ -226,7 +227,7 @@ async function loadBudget() {
 async function loadExpenses() {
     try {
         const res = await fetch('/api/expense/list', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         if (res.ok) {
             const data = await res.json();
@@ -241,7 +242,7 @@ async function loadExpenses() {
 async function loadCategories() {
     try {
         const res = await fetch('/api/category', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         if (res.ok) {
             categoriesList = await res.json();
@@ -342,7 +343,9 @@ document.getElementById('saveCatBtn')?.addEventListener('click', async () => {
 
     const res = await fetch('/api/category', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'x-team-id': localStorage.getItem('currentTeamId') },
         body: JSON.stringify({ icon, name })
     });
 
@@ -410,7 +413,7 @@ window.deleteCategory = function(id) {
         try {
             const res = await fetch(`/api/category/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
             });
             
             if (res.ok) {
@@ -476,7 +479,7 @@ function getDragAfterElement(container, y) {
 
 window.editEntry = async function(id) {
     const res = await fetch(`/api/expense/${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -514,7 +517,7 @@ window.deleteEntry = function(id) {
     showConfirm("삭제 확인", "삭제하시겠습니까?", "🗑️", async () => {
         await fetch(`/api/expense/${id}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         loadExpenses();
     });
@@ -717,7 +720,9 @@ document.getElementById('confirmBudgetBtn')?.addEventListener('click', async () 
 
     const checkRes = await fetch('/api/expense/budget/check', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'x-team-id': localStorage.getItem('currentTeamId') },
         body: JSON.stringify({ start_date: start, end_date: end })
     });
     const checkData = await checkRes.json();
@@ -734,7 +739,9 @@ document.getElementById('confirmBudgetBtn')?.addEventListener('click', async () 
 async function executeSaveBudget(amount, start, end, pType) {
     const res = await fetch('/api/expense/budget', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'x-team-id': localStorage.getItem('currentTeamId') },
         body: JSON.stringify({ amount, start_date: start, end_date: end, period_type: pType })
     });
 
@@ -775,7 +782,9 @@ document.getElementById('saveManualBtn')?.addEventListener('click', () => {
 
         const res = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${localStorage.getItem('token')}` ,
+            'x-team-id': localStorage.getItem('currentTeamId')},
             body: JSON.stringify({ 
                 description: `[${merchant}] ${desc}`, 
                 amount, 
@@ -870,7 +879,7 @@ document.getElementById('receiptFile')?.addEventListener('change', async (e) => 
     try {
         const res = await fetch('/api/expense/ocr', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') },
             body: formData
         });
 
@@ -902,7 +911,7 @@ async function loadUserInfo() {
 
     try {
         const res = await fetch('/api/user/me', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         if (res.ok) {
             const userData = await res.json();
@@ -974,7 +983,7 @@ document.getElementById('uploadReceiptBtn').onclick = async () => {
     try {
         const res = await fetch(`/api/expense/${currentReceiptExpenseId}/receipt`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') },
             body: formData
         });
         
@@ -1018,7 +1027,7 @@ document.addEventListener('click', (e) => {
 async function loadGuildInfo() {
     try {
         const res = await fetch('/api/teams/my', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
         });
         if (!res.ok) return;
         const teams = await res.json();
@@ -1074,7 +1083,9 @@ async function createGuild() {
     try {
         const res = await fetch('/api/teams', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'x-team-id': localStorage.getItem('currentTeamId') },
             body: JSON.stringify({ name })
         });
         if (res.ok) {
@@ -1092,7 +1103,9 @@ async function joinGuild() {
     try {
         const res = await fetch('/api/teams/join', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'x-team-id': localStorage.getItem('currentTeamId') },
             body: JSON.stringify({ invite_code })
         });
         if (res.ok) {
