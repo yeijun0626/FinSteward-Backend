@@ -920,6 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadBudget();
     await loadCategories(); 
     loadExpenses();
+    loadGuildInfo();
 });
 
 let currentReceiptExpenseId = null;
@@ -995,3 +996,60 @@ document.addEventListener('click', (e) => {
         if(modal) modal.style.display = "none";
     }
 });
+
+async function loadGuildInfo() {
+    try {
+        const res = await fetch('/api/teams/my', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data) {
+            document.getElementById('guildInfo').style.display = 'block';
+            document.getElementById('guildActions').style.display = 'none';
+            document.getElementById('myGuildName').innerText = data.name;
+            document.getElementById('myGuildCode').innerText = data.invite_code;
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function createGuild() {
+    const name = document.getElementById('newGuildName').value;
+    if (!name) return alert('이름을 입력하세요');
+    try {
+        const res = await fetch('/api/teams', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`생성 완료! 코드: ${data.invite_code}`);
+            location.reload();
+        } else alert(data.error);
+    } catch (e) {
+        alert('에러 발생');
+    }
+}
+
+async function joinGuild() {
+    const invite_code = document.getElementById('joinGuildCode').value;
+    if (!invite_code) return alert('코드를 입력하세요');
+    try {
+        const res = await fetch('/api/teams/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ invite_code })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert('가입 성공!');
+            location.reload();
+        } else alert(data.error);
+    } catch (e) {
+        alert('에러 발생');
+    }
+}
