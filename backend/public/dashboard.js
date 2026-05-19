@@ -997,23 +997,75 @@ document.addEventListener('click', (e) => {
     }
 });
 
+function toggleAccountMenu() {
+    const menu = document.getElementById('accountDropdown');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function openWorkspaceModal() {
+    document.getElementById('accountDropdown').style.display = 'none';
+    document.getElementById('workspaceModal').style.display = 'flex';
+}
+
+document.addEventListener('click', (e) => {
+    const container = document.getElementById('accountMenuContainer');
+    const menu = document.getElementById('accountDropdown');
+    if (container && !container.contains(e.target)) {
+        if(menu) menu.style.display = 'none';
+    }
+});
+
 async function loadGuildInfo() {
     try {
         const res = await fetch('/api/teams/my', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!res.ok) return;
-        const data = await res.json();
+        const teams = await res.json();
         
-        if (data) {
-            document.getElementById('guildInfo').style.display = 'block';
-            document.getElementById('guildActions').style.display = 'none';
-            document.getElementById('myGuildName').innerText = data.name;
-            document.getElementById('myGuildCode').innerText = data.invite_code;
+        const listDiv = document.getElementById('workspaceList');
+        
+        let html = `
+            <button onclick="switchWorkspace(null, '내 계정 (개인)')" style="width:100%; padding:10px; background:none; border:none; text-align:left; cursor:pointer; border-radius:8px; display:flex; gap:10px; align-items:center;">
+                <div style="width:28px; height:28px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center;">👤</div>
+                <div>
+                    <div style="font-weight:bold; color:#1e293b;">내 계정 (개인)</div>
+                </div>
+            </button>
+        `;
+
+        if (teams && teams.length > 0) {
+            teams.forEach(team => {
+                html += `
+                    <button onclick="switchWorkspace(${team.team_id}, '${team.name}')" style="width:100%; padding:10px; background:none; border:none; text-align:left; cursor:pointer; border-radius:8px; display:flex; gap:10px; align-items:center; margin-top:5px;">
+                        <div style="width:28px; height:28px; background:#e2e8f0; border-radius:8px; display:flex; align-items:center; justify-content:center;">🏢</div>
+                        <div>
+                            <div style="font-weight:bold; color:#1e293b;">${team.name}</div>
+                            <div style="font-size:11px; color:#64748b;">초대코드: ${team.invite_code}</div>
+                        </div>
+                    </button>
+                `;
+            });
         }
+        listDiv.innerHTML = html;
+
+        const currentName = localStorage.getItem('workspaceName') || '내 계정 (개인)';
+        document.getElementById('currentWorkspaceName').innerText = currentName;
+
     } catch (e) {
         console.error(e);
     }
+}
+
+function switchWorkspace(teamId, teamName) {
+    if (teamId === null) {
+        localStorage.removeItem('currentTeamId');
+    } else {
+        localStorage.setItem('currentTeamId', teamId);
+    }
+    localStorage.setItem('workspaceName', teamName);
+    
+    location.reload();
 }
 
 async function createGuild() {
@@ -1025,11 +1077,10 @@ async function createGuild() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({ name })
         });
-        const data = await res.json();
         if (res.ok) {
-            alert(`생성 완료! 코드: ${data.invite_code}`);
+            alert(`그룹이 생성되었습니다!`);
             location.reload();
-        } else alert(data.error);
+        } else alert('생성 실패');
     } catch (e) {
         alert('에러 발생');
     }
@@ -1044,11 +1095,10 @@ async function joinGuild() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({ invite_code })
         });
-        const data = await res.json();
         if (res.ok) {
-            alert('가입 성공!');
+            alert('그룹에 참여했습니다!');
             location.reload();
-        } else alert(data.error);
+        } else alert('가입 실패 (코드를 확인하세요)');
     } catch (e) {
         alert('에러 발생');
     }
