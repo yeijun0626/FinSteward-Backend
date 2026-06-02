@@ -478,39 +478,51 @@ function getDragAfterElement(container, y) {
 }
 
 window.editEntry = async function(id) {
-    const res = await fetch(`/api/expense/${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`,'x-team-id': localStorage.getItem('currentTeamId') }
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    
-    const eid = document.getElementById('editId');
-    const mtitle = document.getElementById('modalTitle');
-    if (eid) eid.value = data.expense_id || data.id;
-    if (mtitle) mtitle.innerText = '내역 수정';
-    
-    const parts = data.description.match(/\[(.*?)\] (.*)/);
-    const mmer = document.getElementById('manualMerchant');
-    const mdes = document.getElementById('manualDesc');
-    const mamt = document.getElementById('manualAmount');
-    const mdat = document.getElementById('manualDate');
+    try {
+        const res = await fetch(`/api/expense/${id}`, {
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'x-team-id': localStorage.getItem('currentTeamId') 
+            }
+        });
+        
+        if (!res.ok) {
+            return alert('데이터를 불러올 수 없습니다.');
+        }
+        
+        const data = await res.json();
+        
+        const eid = document.getElementById('editId');
+        const mtitle = document.getElementById('modalTitle');
+        if (eid) eid.value = data.expense_id || data.id;
+        if (mtitle) mtitle.innerText = '내역 수정';
+        
+        const parts = data.description.match(/\[(.*?)\] (.*)/);
+        const mmer = document.getElementById('manualMerchant');
+        const mdes = document.getElementById('manualDesc');
+        const mamt = document.getElementById('manualAmount');
+        const mdat = document.getElementById('manualDate');
 
-    if (mmer) mmer.value = parts ? parts[1] : '';
-    if (mdes) mdes.value = parts ? parts[2] : data.description;
-    if (mamt) mamt.value = formatCurrency(Math.abs(data.amount));
-    if (mdat) mdat.value = data.expense_date.slice(0, 10);
-    
-    const catInput = document.getElementById('manualCategory');
-    if(catInput) catInput.value = data.category_id || '';
-    
-    document.querySelectorAll('.cat-item').forEach(el => el.style.borderColor = '#e2e8f0');
-    const targetCat = document.querySelector(`.cat-item[data-id="${data.category_id || ''}"]`);
-    if(targetCat) targetCat.style.borderColor = '#2563eb';
+        if (mmer) mmer.value = parts ? parts[1] : '';
+        if (mdes) mdes.value = parts ? parts[2] : data.description;
+        if (mamt) mamt.value = Math.abs(data.amount);
+        if (mdat) mdat.value = data.expense_date.slice(0, 10);
+        
+        const catInput = document.getElementById('manualCategory');
+        if (catInput) catInput.value = data.category_id || '';
+        
+        document.querySelectorAll('.cat-item').forEach(el => el.style.borderColor = '#f1f5f9');
+        const targetCat = document.querySelector(`.cat-item[data-id="${data.category_id || ''}"]`);
+        if (targetCat) targetCat.style.borderColor = '#2563eb';
 
-    currentType = data.amount > 0 ? 'income' : 'expense';
-    updateTypeUI();
-    const modal = document.getElementById('manualModal');
-    if(modal) modal.style.display = 'flex';
+        currentType = data.amount > 0 ? 'income' : 'expense';
+        if (typeof updateTypeUI === 'function') updateTypeUI();
+        
+        const modal = document.getElementById('manualModal');
+        if (modal) modal.style.display = 'flex';
+    } catch (e) {
+        console.error(e);
+    }
 };
 
 window.deleteEntry = function(id) {
