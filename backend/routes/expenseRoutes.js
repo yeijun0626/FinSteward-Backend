@@ -47,6 +47,23 @@ router.get('/budget', auth, (req, res) => {
     });
 });
 
+router.post('/budget/check', auth, (req, res) => {
+    const teamInfo = getTeamInfo(req);
+    const { start_date, end_date } = req.body;
+    
+    const query = `SELECT * FROM budget WHERE ${teamInfo.condition} AND (start_date <= ? AND end_date >= ?) LIMIT 1`;
+    
+    db.query(query, [...teamInfo.params, end_date, start_date], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        if (results.length > 0) {
+            res.json({ overlap: true, existing: results[0] });
+        } else {
+            res.json({ overlap: false });
+        }
+    });
+});
+
 router.post('/budget', auth, (req, res) => {
     const userId = getUserId(req);
     const teamInfo = getTeamInfo(req);
