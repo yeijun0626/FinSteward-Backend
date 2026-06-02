@@ -148,4 +148,15 @@ router.delete('/:id', auth, (req, res) => {
     });
 });
 
+router.get('/:id', auth, (req, res) => {
+    const teamInfo = getTeamInfo(req);
+    const query = `SELECT * FROM expense WHERE expense_id = ? AND ${teamInfo.condition}`;
+    
+    db.query(query, [req.params.id, ...teamInfo.params], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) return res.status(404).json({ error: "Not found" });
+        res.json(results[0]);
+    });
+});
+
 module.exports = router;
